@@ -18,6 +18,18 @@ import java.util.List;
 * */
 public class StudentDaoImpl implements IStudentDao {
     private static final Logger logger = LoggerFactory.getLogger(StudentDaoImpl.class);
+    // 临时测试入口：测试 findById 是否正常工作
+    public static void main(String[] args) {
+        StudentDaoImpl dao = new StudentDaoImpl();
+        // 假设你的测试数据里，id=4 对应的是 '张小明'
+        Student student = dao.findById(4L);
+
+        if (student != null) {
+            System.out.println("✅ 测试成功！查到学生：" + student.getName() + "，班级ID：" + student.getClassId());
+        } else {
+            System.out.println("❌ 测试失败，没查到数据或SQL报错，请检查日志！");
+        }
+    }
     @Override
     public Student findById(Long id){
         //定义SQL查询语句（？是占位符，防止SQL注入）
@@ -35,7 +47,7 @@ public class StudentDaoImpl implements IStudentDao {
                     Student student = new Student();
                     student.setId((int) rs.getLong("id"));
                     student.setName(rs.getString("name"));
-                    student.setClassId((int) rs.getLong("class"));
+                    student.setClassId((int) rs.getLong("class_Id"));
 
                     logger.info("查询学生成功，学号：{},姓名：{}",id,student.getName());
                     return student ;

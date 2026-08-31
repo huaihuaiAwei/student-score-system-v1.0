@@ -14,7 +14,7 @@ public class JDBCUtil {
     private static final Logger logger = LoggerFactory.getLogger(JDBCUtil.class);
 
     //数据库连接信息
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/db1";
+    private static final String URL = "jdbc:mysql://localhost:3306/score_system_v1?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8";
     private static final String USER = "root";
     private static final String PASSWORD = "867907";
 
