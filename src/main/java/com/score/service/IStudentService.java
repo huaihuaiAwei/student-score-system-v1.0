@@ -25,6 +25,6 @@ public interface IStudentService {
     /*
     * 根据学号查询学生信息
     * */
-    void getStudentById(Long id) throws Exception ;
+    Student getStudentById(Long id) throws Exception ;
 
 }
