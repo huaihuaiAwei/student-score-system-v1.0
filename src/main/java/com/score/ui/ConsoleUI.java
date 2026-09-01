@@ -2,7 +2,9 @@ package com.score.ui;
 
 import com.score.pojo.Student;
 import com.score.pojo.User;
+import com.score.service.IAuthService;
 import com.score.service.IStudentService;
+import com.score.service.impl.AuthServiceImpl;
 import com.score.service.impl.StudentServiceImpl;
 
 import javax.swing.*;
@@ -18,7 +20,7 @@ public class ConsoleUI {
     private final Scanner sc = new Scanner(System.in) ;
 
     //实现Service的引用
-    //private final IAuthService authService = new AuthServiceImpl();
+    private final IAuthService authService = new AuthServiceImpl();
     //private final IScoreService scoreService = new scoreServiceImpl();
     private final IStudentService studentService = new StudentServiceImpl();
 
@@ -75,24 +77,17 @@ public class ConsoleUI {
             System.out.println("请输入密码：");
             String password = sc.nextLine();
 
-        //TODO : 写好 AuthServiceImpl 后，实现下面代码
-//        try{
-//            return authServiceImpl.login(username,password);
-//        }catch(Exception e){
-//            System.out.println("登录失败：" + e.getMessage());
-//            return null;
-//        }
-
-        //临时测试数据：admin "123456"
-        if("admin".equals(username) && "123456".equals(password)){
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setRole("admin");
-            return admin ;
+            AuthServiceImpl authService = new AuthServiceImpl();
+        try{
+            User user = authService.login(username,password);
+            System.out.println("登录成功！欢迎" + user.getUsername()+"(" +
+                    user.getRole() + ")");
+            return user;
+        }catch(Exception e){
+            System.out.println("登录失败：" + e.getMessage());
+            return null;
         }
-        System.out.println("用户名或密码错误");
-        return null;
-        }
+    }
 
 
     //=========管理员菜单（行政人员）===========
