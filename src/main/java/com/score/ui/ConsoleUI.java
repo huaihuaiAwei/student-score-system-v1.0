@@ -1,6 +1,9 @@
 package com.score.ui;
 
+import com.score.pojo.Student;
 import com.score.pojo.User;
+import com.score.service.IStudentService;
+import com.score.service.impl.StudentServiceImpl;
 
 import javax.swing.*;
 import java.util.Scanner;
@@ -17,7 +20,7 @@ public class ConsoleUI {
     //实现Service的引用
     //private final IAuthService authService = new AuthServiceImpl();
     //private final IScoreService scoreService = new scoreServiceImpl();
-    //private final IStudentService studentService = new studentServiceImpl();
+    private final IStudentService studentService = new StudentServiceImpl();
 
     //main方法
     public static void main(String[] args) {
@@ -80,7 +83,7 @@ public class ConsoleUI {
 //            return null;
 //        }
 
-        //临时测试数据：adimin "123456"
+        //临时测试数据：admin "123456"
         if("admin".equals(username) && "123456".equals(password)){
             User admin = new User();
             admin.setUsername("admin");
@@ -116,15 +119,29 @@ public class ConsoleUI {
                     System.out.println("请输入班级ID:");
                     Long classId = sc.nextLong();
                     sc.nextLine();
-                    //TODO ：调用studentService.addStudent(……)
-                    System.out.println("学生删除成功！");
+
+                    try{
+                        Student student = new Student();
+                        student.setId(Math.toIntExact(id));
+                        student.setName(name);
+                        student.setClassId(Math.toIntExact(classId));
+                        studentService.addStudent(student);
+                        System.out.println("添加学生成功！");
+                    }catch(Exception e){
+                        System.out.println("操作失败" + e.getMessage());
+                    }
                     break;
                 case 2:
                     System.out.println("请输入要删除的学号：");
                     Long delId = sc.nextLong();
                     sc.nextLine();
-                    //TODO:调用studentService.deleteStudent(……)
-                    System.out.println("学生删除成功！");
+
+                    try{
+                        studentService.deleteStudent(delId);
+                        System.out.println("删除学生成功！");
+                    }catch (Exception e){
+                        System.out.println("操作失败" + e.getMessage());
+                    }
                     break;
                 case 3:
                     //功能略复杂，先占位
@@ -134,8 +151,14 @@ public class ConsoleUI {
                     System.out.println("请输入要查询的学号：");
                     Long findId = sc.nextLong();
                     sc.nextLine();
-                    //TODO : 调用studentService.getStudentById(findId)
-                    System.out.println("查询结果；");
+
+                    try{
+                        Student s = studentService.getStudentById(findId);
+                        System.out.println("查询结果：学号=" + s.getId() + ",姓名=" +s.getName()
+                        + ",班级ID= " + s.getClassId());
+                    }catch (Exception e){
+                        System.out.println("操作失败：" + e.getMessage());
+                    }
                     break;
                 case 5:
                     System.out.println("正在退出登录……");

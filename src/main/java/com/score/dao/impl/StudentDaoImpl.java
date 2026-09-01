@@ -75,7 +75,7 @@ public class StudentDaoImpl implements IStudentDao {
     //3.删除学生
     @Override
     public int deleteById(Long id) {
-        String sql = "delect from student where id = ? ";
+        String sql = "delete from student where id = ? ";
         try(Connection conn = JDBCUtil.getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setLong(1,id);
