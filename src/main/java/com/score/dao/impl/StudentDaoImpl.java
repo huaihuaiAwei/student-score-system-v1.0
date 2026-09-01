@@ -17,19 +17,10 @@ import java.util.List;
 * 学生档案数据访问实现类
 * */
 public class StudentDaoImpl implements IStudentDao {
-    private static final Logger logger = LoggerFactory.getLogger(StudentDaoImpl.class);
-    // 临时测试入口：测试 findById 是否正常工作
-    public static void main(String[] args) {
-        StudentDaoImpl dao = new StudentDaoImpl();
-        // 假设你的测试数据里，id=4 对应的是 '张小明'
-        Student student = dao.findById(4L);
 
-        if (student != null) {
-            System.out.println("✅ 测试成功！查到学生：" + student.getName() + "，班级ID：" + student.getClassId());
-        } else {
-            System.out.println("❌ 测试失败，没查到数据或SQL报错，请检查日志！");
-        }
-    }
+    private static final Logger logger = LoggerFactory.getLogger(StudentDaoImpl.class);
+
+    //1.查询学生
     @Override
     public Student findById(Long id){
         //定义SQL查询语句（？是占位符，防止SQL注入）
@@ -62,23 +53,78 @@ public class StudentDaoImpl implements IStudentDao {
         }
     }
 
+    // 2.添加学生
     @Override
     public int insert(Student student) {
-        return 0;
+        String sql = "insert into student (id,name,class_id) values (?,?,?)";
+        try(Connection conn = JDBCUtil.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setLong(1,student.getId());
+            pstmt.setString(2,student.getName());
+            pstmt.setLong(3,student.getClassId());
+            int result = pstmt.executeUpdate();
+            logger.info("添加学生成功，学号：{} ， 影响行数：{}",student.getId(),result);
+            return result;
+        }catch(SQLException e){
+            logger.error("添加学生失败，学号：{}",student.getId());
+            e.printStackTrace();
+            return 0;
+        }
     }
 
+    //3.删除学生
     @Override
     public int deleteById(Long id) {
-        return 0;
+        String sql = "delect from student where id = ? ";
+        try(Connection conn = JDBCUtil.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setLong(1,id);
+            int result = pstmt.executeUpdate();
+            logger.info("删除学生成功，学号：{}， 影响行数 ：{}",id,result);
+            return result;
+        }catch(SQLException e){
+            logger.error("删除学生失败，学号：{}",id,e);
+            return 0;
+        }
     }
 
+    //4.修改学生
     @Override
     public int update(Student student) {
-        return 0;
+        String sql = "update student set name = ? ,class_id = ? where id = ?";
+        try(Connection conn = JDBCUtil.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1,student.getName());
+            pstmt.setLong(2,student.getClassId());
+            pstmt.setLong(3,student.getId());
+            int result = pstmt.executeUpdate();
+            logger.info("修改学生成功，学号：{}，影响行数：{}",student.getId(),result);
+            return result;
+        }catch(SQLException e){
+            logger.error("修改学生失败，学号：{}",student.getId());
+            return 0;
+        }
     }
 
+    //5.查询所有学生
     @Override
     public List<Student> findAll() {
-        return new ArrayList<>();
+        String sql = "select id, name ,class_id from student";
+        List<Student> list = new ArrayList<>();
+        try(Connection conn = JDBCUtil.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        ResultSet rs = pstmt.executeQuery()){
+            while(rs.next()){
+                Student student = new Student();
+                student.setId((int) rs.getLong("id"));
+                student.setName(rs.getString("name"));
+                student.setClassId((int) rs.getLong("class_id"));
+                list.add(student);
+            }
+            logger.info("查询所有学生成功，共{}条记录",list.size());
+        }catch(SQLException e){
+            logger.error("查询所有学生失败",e);
+        }
+        return list;
     }
 }
