@@ -12,7 +12,7 @@ public interface IScoreDao {
     int insertOrUpdate(Score score);
 
     //删除成绩(某学生删除某课程)
-    int deleteByStudentAndScore(Long studentId ,Long classId) ;
+    int deleteByStudentAndScore(Long studentId ,Long courseId) ;
 
     //查询某学生所有成绩
     List<Score> findByStudentId(Long studentId) ;
