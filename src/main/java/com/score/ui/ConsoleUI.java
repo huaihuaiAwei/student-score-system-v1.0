@@ -1,7 +1,10 @@
 package com.score.ui;
 
+import com.score.dao.ICourseDao;
 import com.score.dao.ITeacherCourseDao;
+import com.score.dao.impl.CourseDaoImpl;
 import com.score.dao.impl.TeacherCourseDaoImpl;
+import com.score.pojo.Course;
 import com.score.pojo.Score;
 import com.score.pojo.Student;
 import com.score.pojo.User;
@@ -31,6 +34,7 @@ public class ConsoleUI {
     private final IScoreService scoreService = new ScoreServiceImpl();
     private final IStudentService studentService = new StudentServiceImpl();
     private final ITeacherCourseDao teacherCourseDao = new TeacherCourseDaoImpl();
+    private final ICourseDao courseDao = new CourseDaoImpl();
 
     //main方法
     public static void main(String[] args) {
@@ -85,7 +89,7 @@ public class ConsoleUI {
             System.out.println("请输入密码：");
             String password = sc.nextLine();
 
-            AuthServiceImpl authService = new AuthServiceImpl();
+//            AuthServiceImpl authService = new AuthServiceImpl();
         try{
             User user = authService.login(username,password);
             System.out.println("登录成功！欢迎" + user.getUsername()+"(" +
@@ -308,15 +312,27 @@ public class ConsoleUI {
             int choice = sc.nextInt();sc.nextLine();
 
             switch(choice){
-                case 1:
-                    //TODO : 调用scoreService.getScoreByStudent()
-                    System.out.println("你的成绩：");
-                    break;
-                case 2:
-                    System.out.println("退出登录中……");
-                    return;
-                default:
-                    System.out.println("无效输入");
+                case 1 -> {
+                    try{
+                        List<Score> scores = scoreService.getScoreByStudent((long) user.getId());
+                        System.out.println("----你的成绩单----");
+                        for (Score s : scores) {
+                            Course c = courseDao.findById((long) s.getStudentId());
+                            String courseName = (c != null) ? c.getName() : " 未知课程（ID："+s.getCourseId()+"）";
+                            System.out.println("课程：" + courseName+ "，分数：" +s.getScore());
+                        }
+                    }catch (Exception e) {
+                        System.out.println("系统异常：" + e.getMessage());
+                    }
+                }
+
+                    case 2 -> {
+                        System.out.println("退出登录中……");
+                        return;
+                    }
+                    default ->
+                        System.out.println("无效输入");
+
 
             }
         }
