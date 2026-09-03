@@ -1,13 +1,20 @@
 package com.score.ui;
 
+import com.score.dao.ITeacherCourseDao;
+import com.score.dao.impl.TeacherCourseDaoImpl;
+import com.score.pojo.Score;
 import com.score.pojo.Student;
 import com.score.pojo.User;
 import com.score.service.IAuthService;
+import com.score.service.IScoreService;
 import com.score.service.IStudentService;
 import com.score.service.impl.AuthServiceImpl;
+import com.score.service.impl.ScoreServiceImpl;
 import com.score.service.impl.StudentServiceImpl;
 
 import javax.swing.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 /*
@@ -21,8 +28,9 @@ public class ConsoleUI {
 
     //实现Service的引用
     private final IAuthService authService = new AuthServiceImpl();
-    //private final IScoreService scoreService = new scoreServiceImpl();
+    private final IScoreService scoreService = new ScoreServiceImpl();
     private final IStudentService studentService = new StudentServiceImpl();
+    private final ITeacherCourseDao teacherCourseDao = new TeacherCourseDaoImpl();
 
     //main方法
     public static void main(String[] args) {
@@ -165,6 +173,13 @@ public class ConsoleUI {
     }
     //===============主课老师菜单============
     private void showTeacherMenu(User user){
+        //1.先查出该老师的课程数
+        List<Long> courseIds = teacherCourseDao.findCourseIdByTeacherId((long) user.getId());
+        if(courseIds.isEmpty()){
+            System.out.println("您未被分配任何课程，请联系管理员。");
+            return ;
+        }
+
         while(true){
             System.out.println("\n---主课老师菜单---");
             System.out.println("1.添加/修改成绩");
@@ -175,21 +190,88 @@ public class ConsoleUI {
             int choice = sc.nextInt();sc.nextLine();
 
             switch(choice){
-                case 1:
+                case 1 -> {
                     //这里要先进入课程（调用ITeacherCourseDao查询老师的任课）
-                    System.out.println("请选择课程：");
-                    //TODO : 调用scoreService.addOrUpdateScore()
-                    System.out.println("成绩录入/修改成功！");
-                    break;
-                case 2:
-                    System.out.println("删除成功！");
-                    break;
-                case 3:
-                    System.out.println("查询班级成绩");
-                    break;
-                case 4:
+                    System.out.print("请输入你要操作的课程ID：（" + courseIds + "）：");
+                    int cid = sc.nextInt();
+                    sc.nextLine();
+                    //历史遗留bug，等待后人智慧
+//                    if (!Objects.equals(cid,courseIds)) {
+//                        System.out.println("你没有权限操作该课程！");
+//                        break;
+//                    }
+
+                    System.out.println("请输入该学生学号：");
+                    int sid = sc.nextInt();
+                    sc.nextLine();
+                    System.out.println("请输入成绩（0——100）：");
+                    int scoreVal = sc.nextInt();
+                    sc.nextLine();
+
+                    Score score = new Score();
+                    score.setStudentId(sid);
+                    score.setCourseId(cid);
+                    score.setScore(scoreVal);
+
+                    try {
+                        //先尝试添加，若已存在抛出异常
+                        scoreService.addScore(score);
+                        System.out.println("成功录入成功！");
+                    } catch (Exception e) {
+                        if (e.getMessage().contains("已有成绩")) {
+                            //如果已存在，询问是否覆盖
+                            System.out.println("该成绩已存在，是否覆盖成绩（Yes）");
+                            String confirm = sc.nextLine();
+                            if ("Yes".equalsIgnoreCase(confirm)) {
+                                try {
+                                    scoreService.updateScore(score);
+                                    System.out.println("成绩修改成功！");
+                                } catch (Exception ex) {
+                                    System.out.println("修改失败：" + ex.getMessage());
+                                }
+                            } else {
+                                System.out.println("操作已取消");
+                            }
+                        } else {
+                            System.out.println("操作失败");
+                        }
+                    }
+                }
+                case 2 ->{
+                    System.out.print("请输入课程ID：" );
+                    Long cid = sc.nextLong();
+                    sc.nextLine();
+//                    if (!Objects.equals(cid,courseIds)) {
+//                        System.out.println("你没有权限操作该课程！");
+//                        break;
+//                    }
+                    System.out.println("请输入该学生学号：");
+                    Long sid = sc.nextLong();
+                    sc.nextLine();
+                    try{
+                        scoreService.deleteScore(sid,cid);
+                        System.out.println("学生成绩删除成功");
+                    }catch (Exception e){
+                        System.out.println("删除失败：" + e.getMessage());
+                    }
+                }
+                case 3 ->{
+                    System.out.print("请输入课程ID：" );
+                    int cid = sc.nextInt();
+                    sc.nextLine();
+                    if (!courseIds.contains(cid)) {
+                        System.out.println("你没有权限操作该课程！");
+                        break;
+                    }
+                    System.out.println("请输入班级ID：");
+                    int classId = sc.nextInt();sc.nextLine();
+                    System.out.println("该功能暂未开放😀");
+                }
+                case 4 ->{
                     System.out.println("退出登录……");
-                default:
+                    return ;
+                }
+                default->
                     System.out.println("无效输入");
             }
         }
